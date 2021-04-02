@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const admin = require('firebase-admin');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config()
@@ -11,6 +12,16 @@ const app = express()
 
 app.use(bodyParser.json());
 app.use(cors());
+
+
+
+var serviceAccount = require("./bookmark-7dff4-firebase-adminsdk-ubmky-58f30eff87.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+
 const port = process.env.PORT || 5000
 
 app.get('/', (req, res) =>{
@@ -66,6 +77,34 @@ client.connect(err => {
       const id = ObjectId(req.params.id);
       console.log('delete this', id);
     })
+
+    app.get('/orders', (req, res) => {
+      const bearer = req.headers.authorization;
+      if (bearer && bearer.startsWith('Bearer ')) {
+          const idToken = bearer.split(' ')[1];
+          // idToken comes from the client app
+          admin.auth().verifyIdToken(idToken)
+              .then((decodedToken) => {
+                  const tokenEmail = decodedToken.email;
+                  const queryEmail = req.query.email;
+                  if (tokenEmail == queryEmail) {
+                      ordersCollection.find({ email: queryEmail })
+                          .toArray((err, documents) => {
+                              res.status(200).send(documents);
+                          })
+                  }
+                  else {
+                      res.status(401).send('unauthorized access')
+                  }
+              })
+              .catch((error) => {
+                  res.status(401).send('unauthorized access');
+              });
+      }
+      else {
+          res.status(401).send('unauthorized access');
+      }
+  })
 
 });
 
