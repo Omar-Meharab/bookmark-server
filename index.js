@@ -74,8 +74,10 @@ client.connect(err => {
   })
 
     app.delete('/deleteBook/:id', (req, res) => {
-      const id = ObjectId(req.params.id);
-      console.log('delete this', id);
+      booksCollection.deleteOne({_id: ObjectId(req.params.id)})
+      .then(result => {
+        res.send(result.deletedCount > 0);
+      })
     })
 
     app.get('/orders', (req, res) => {
