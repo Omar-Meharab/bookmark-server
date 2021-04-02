@@ -34,15 +34,6 @@ client.connect(err => {
   const booksCollection = client.db("bookMark").collection("books");
   const ordersCollection = client.db("bookMark").collection("orders");
   
-    // app.post('/addBooks', (req, res) =>{
-    //   const books = req.body;
-    //   booksCollection.insertMany(books)
-    //   .then(result => {
-    //     console.log(result.insertedCount);
-    //     res.send(result.insertedCount)
-    //   })
-    // })
-
     app.get('/books', (req, res) =>{
       booksCollection.find({})
       .toArray( (err, documents) => {
